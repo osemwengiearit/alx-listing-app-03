@@ -1,116 +1,142 @@
-import React from 'react';
-import Head from 'next/head';
-import Pill from '@/components/ui/Pill';
-import { PROPERTYLISTINGSAMPLE } from '@/constants';
-import Image from 'next/image';
-import PropertyCard from '@/components/cards/PropertyCard';
+// pages/index.tsx
+import Head from "next/head";
+import Image from "next/image";
+import { useState } from "react";
+import { PROPERTYLISTINGSAMPLE, HERO_BACKGROUND_IMAGE } from "@/constants";
+import { PropertyProps } from "@/interfaces";
+import Pill from "@/components/Pill";
 
-const filters = [
-  'Top Villa',
-  'Self Checkin',
-  'Free WiFi',
-  'Mountain View',
-  'Private Pool',
-  'Pet Friendly',
-  'Beachfront',
-  '24h Checkin',
-];
+type PropertyCategory = string;
 
-export default function Home() {
+interface PropertyCardProps {
+  property: PropertyProps;
+}
+
+const PropertyCard: React.FC<PropertyCardProps> = ({ property }) => {
+  return (
+    <div className="bg-white rounded-lg shadow-md overflow-hidden transform transition-transform duration-200 hover:scale-105">
+      <div className="relative w-full h-48">
+        <Image
+          src={property.image}
+          alt={property.name}
+          layout="fill"
+          objectFit="cover"
+          className="rounded-t-lg"
+        />
+        {property.discount && (
+          <span className="absolute top-2 left-2 bg-blue-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+            -{property.discount}%
+          </span>
+        )}
+      </div>
+      <div className="p-4">
+        <h3 className="text-xl font-semibold text-gray-800 truncate">
+          {property.name}
+        </h3>
+        <p className="text-gray-600 text-sm">
+          {property.address.city}, {property.address.country}
+        </p>
+        <div className="flex items-center mt-2">
+          <span className="text-yellow-500 text-lg mr-1">★</span>
+          <span className="text-gray-700 font-medium">{property.rating}</span>
+          <span className="ml-auto text-blue-600 text-xl font-bold">
+            ${property.price}
+          </span>
+        </div>
+        <div className="mt-2 flex flex-wrap gap-2">
+          {property.category.map((cat) => (
+            <span
+              key={cat}
+              className="bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded-full"
+            >
+              {cat}
+            </span>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const Home: React.FC = () => {
+  const [activeFilter, setActiveFilter] = useState<PropertyCategory | "All">(
+    "All"
+  );
+
+  const allCategories = Array.from(
+    new Set(
+      PROPERTYLISTINGSAMPLE.flatMap((property) => property.category)
+    )
+  );
+
+  const filters = ["All", ...allCategories];
+
+  const filteredProperties =
+    activeFilter === "All"
+      ? PROPERTYLISTINGSAMPLE
+      : PROPERTYLISTINGSAMPLE.filter((property) =>
+          property.category.includes(activeFilter)
+        );
+
   return (
     <>
       <Head>
-        <title>ALX Listing App</title>
-        <meta
-          name="description"
-          content="Find the best properties around the world"
-        />
+        <title>ALX Listing App - Home</title>
+        <meta name="description" content="Find your favorite place here!" />
+        <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      {/* Hero Section */}
       <section
-        className="relative w-full h-[80vh] bg-cover bg-center flex items-center justify-center text-white"
-        style={{
-          backgroundImage:
-            "url('https://source.unsplash.com/1600x900/?villa,resort')",
-        }}
+        className="relative h-[500px] bg-cover bg-center flex items-center justify-center text-center px-4"
+        style={{ backgroundImage: `url(${HERO_BACKGROUND_IMAGE})` }}
       >
-        <div className="bg-black bg-opacity-50 p-8 rounded-lg text-center max-w-2xl">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">
+        <div className="absolute inset-0 bg-black opacity-50"></div>
+        <div className="relative z-10 text-white">
+          <h1 className="text-5xl md:text-6xl font-extrabold leading-tight drop-shadow-lg">
             Find your favorite place here!
           </h1>
-          <p className="text-lg md:text-xl">
+          <p className="mt-4 text-xl md:text-2xl font-light drop-shadow-md">
             The best prices for over 2 million properties worldwide.
           </p>
         </div>
       </section>
 
-      {/* Filter Section */}
-      <section className="px-4 md:px-10 py-6 bg-white">
-        <h2 className="text-xl font-semibold mb-4">Filters</h2>
-        <div className="flex flex-wrap gap-3">
-          {filters.map((filter, idx) => (
-            <Pill key={idx} label={filter} />
-          ))}
-        </div>
-      </section>
-    </>
-  );
-}
-
-{
-  /* Listing Section */
-}
-<section className="px-4 md:px-10 py-8 bg-gray-50">
-  <h2 className="text-xl font-semibold mb-6">Explore Properties</h2>
-  <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-    {PROPERTYLISTINGSAMPLE.map((property, index) => (
-      <div
-        key={index}
-        className="bg-white rounded-lg shadow-md overflow-hidden transition-transform hover:scale-[1.02]"
-      >
-        <Image
-          src={property.image}
-          alt={property.name}
-          width={400} // or any value depending on layout
-          height={300}
-          className="w-full h-60 object-cover rounded-xl"
-          unoptimized // optional: if the image is hosted externally and not optimized
-        />
-
-        <div className="p-4">
-          <div className="flex justify-between items-center mb-2">
-            <h3 className="text-lg font-semibold">{property.name}</h3>
-            <span className="text-sm bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full">
-              ⭐ {property.rating}
-            </span>
+      <div className="container mx-auto px-4 py-8">
+        <section className="mb-8">
+          <h2 className="text-2xl font-bold text-gray-800 mb-4">
+            Filter Properties
+          </h2>
+          <div className="flex flex-wrap gap-3">
+            {filters.map((filter) => (
+              <Pill
+                key={filter}
+                label={filter}
+                isActive={activeFilter === filter}
+                onClick={setActiveFilter}
+              />
+            ))}
           </div>
-          <p className="text-sm text-gray-600">
-            {property.address.city}, {property.address.country}
-          </p>
-          <p className="text-gray-800 font-bold mt-2">
-            ${property.price.toLocaleString()}
-            <span className="text-sm text-gray-500 font-medium"> / night</span>
-          </p>
-          {property.discount && (
-            <p className="text-red-500 text-sm mt-1 font-semibold">
-              {property.discount}% off!
+        </section>
+
+        <section>
+          <h2 className="text-2xl font-bold text-gray-800 mb-6">
+            Explore Properties
+          </h2>
+          {filteredProperties.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {filteredProperties.map((property) => (
+                <PropertyCard key={property.name} property={property} />
+              ))}
+            </div>
+          ) : (
+            <p className="text-center text-gray-600 text-lg">
+              No properties found for the selected filter.
             </p>
           )}
-        </div>
+        </section>
       </div>
-    ))}
-  </div>
-</section>;
+    </>
+  );
+};
 
-{
-  /* Property Listing Section */
-}
-<section className="px-4 md:px-10 py-6 bg-gray-50">
-  <h2 className="text-xl font-semibold mb-4">Top Listings</h2>
-  <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-    {PROPERTYLISTINGSAMPLE.map((property, idx) => (
-      <PropertyCard key={idx} property={property} />
-    ))}
-  </div>
-</section>;
+export default Home;
